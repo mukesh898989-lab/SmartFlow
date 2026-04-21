@@ -1,0 +1,55 @@
+<div class="page-header">
+  <h2>Generate Token</h2>
+  <p>Assign a queue token to a registered patient</p>
+</div>
+
+<div class="card" style="max-width:520px;">
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+  <div *ngIf="error"   class="alert alert-danger">{{ error }}</div>
+
+  <div *ngIf="generatedToken" class="card" style="background:#f0f9ff;border:1px solid #bee3f8;text-align:center;margin-bottom:16px;">
+    <p style="font-size:13px;color:#2b6cb0;">Token Generated</p>
+    <div class="token-number">{{ generatedToken.tokenNumber }}</div>
+    <p style="margin-top:8px;color:#4a5568;">{{ generatedToken.patientName }} → Dr. {{ generatedToken.doctorName }}</p>
+    <p><span class="badge badge-{{ generatedToken.priority.toLowerCase() }}">{{ generatedToken.priority }}</span></p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-group">
+      <label>Patient *</label>
+      <select formControlName="patientId">
+        <option [ngValue]="null" disabled>Select patient</option>
+        <option *ngFor="let p of patients" [value]="p.id">
+          {{ p.name }} ({{ p.phone }})
+        </option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Department *</label>
+      <select formControlName="departmentId">
+        <option [ngValue]="null" disabled>Select department</option>
+        <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Doctor *</label>
+      <select formControlName="doctorId" [disabled]="!form.get('departmentId')?.value">
+        <option [ngValue]="null" disabled>Select doctor</option>
+        <option *ngFor="let d of filteredDoctors" [value]="d.id">
+          {{ d.name }} ({{ d.specialization }})
+        </option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Priority *</label>
+      <select formControlName="priority">
+        <option value="NORMAL">Normal</option>
+        <option value="URGENT">Urgent</option>
+        <option value="EMERGENCY">Emergency</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" [disabled]="loading">
+      {{ loading ? 'Generating...' : 'Generate Token' }}
+    </button>
+  </form>
+</div>

@@ -1,0 +1,19 @@
+<div class="navbar">
+  <span class="brand">Hospital Queue — Admin</span>
+  <nav>
+    <a routerLink="/admin/dashboard"   routerLinkActive="active">Dashboard</a>
+    <a routerLink="/admin/departments" routerLinkActive="active">Departments</a>
+    <a routerLink="/admin/doctors"     routerLinkActive="active">Doctors</a>
+    <a routerLink="/admin/users"       routerLinkActive="active">Users</a>
+  </nav>
+  <div>
+    <span style="color:#cdd9e5;font-size:13px;margin-right:16px;">
+      {{ auth.getCurrentUser()?.name }}
+    </span>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+</div>
+
+<div class="container" style="padding-top:24px;">
+  <router-outlet></router-outlet>
+</div>

@@ -1,0 +1,84 @@
+<div class="page-header">
+  <h2>My Queue</h2>
+  <p>Manage your patient consultation queue in real time</p>
+</div>
+
+<div *ngIf="success" class="alert alert-success">{{ success }}</div>
+<div *ngIf="error"   class="alert alert-danger">{{ error }}</div>
+
+<!-- Current Patient -->
+<div class="card" style="border-left: 4px solid #007bff;">
+  <h4 style="margin-bottom:16px; color:#1a3c5e;">Current Patient</h4>
+
+  <div *ngIf="currentToken; else noCurrentPatient">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+      <div>
+        <div class="token-number">{{ currentToken.tokenNumber }}</div>
+        <p style="font-size:18px; font-weight:600; margin-top:8px;">{{ currentToken.patientName }}</p>
+        <p style="color:#6c757d;">{{ currentToken.patientPhone }}</p>
+        <span [class]="getPriorityClass(currentToken.priority)" style="margin-top:8px; display:inline-block;">
+          {{ currentToken.priority }}
+        </span>
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button class="btn btn-success" (click)="callNext()" [disabled]="actionLoading">
+          Call Next
+        </button>
+        <button class="btn btn-secondary" (click)="completeCurrentToken()" [disabled]="actionLoading">
+          Complete &amp; Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noCurrentPatient>
+    <p style="color:#6c757d; margin-bottom:16px;">No patient is currently in consultation.</p>
+    <button class="btn btn-primary" (click)="callNext()" [disabled]="actionLoading || queue.length === 0">
+      {{ actionLoading ? 'Loading...' : 'Call First Patient' }}
+    </button>
+  </ng-template>
+</div>
+
+<!-- Waiting Queue -->
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+    <h4 style="color:#1a3c5e;">Waiting Queue ({{ queue.length }})</h4>
+    <button class="btn btn-secondary" (click)="loadQueue()" [disabled]="loading" style="font-size:13px;">
+      Refresh
+    </button>
+  </div>
+
+  <table *ngIf="queue.length > 0">
+    <thead>
+      <tr>
+        <th>Position</th>
+        <th>Token #</th>
+        <th>Patient</th>
+        <th>Priority</th>
+        <th>Arrived At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let token of queue; let i = index"
+          [style.background]="token.priority === 'EMERGENCY' ? '#fff5f5' : token.priority === 'URGENT' ? '#fffbf0' : ''">
+        <td>
+          <span class="queue-position" style="font-size:20px;">{{ i + 1 }}</span>
+        </td>
+        <td><strong>{{ token.tokenNumber }}</strong></td>
+        <td>
+          {{ token.patientName }}<br>
+          <small style="color:#6c757d;">{{ token.patientPhone }}</small>
+        </td>
+        <td><span [class]="getPriorityClass(token.priority)">{{ token.priority }}</span></td>
+        <td style="font-size:13px; color:#6c757d;">
+          {{ token.createdAt | date:'HH:mm' }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!loading && queue.length === 0"
+     style="text-align:center; color:#6c757d; padding:24px;">
+    No patients waiting in the queue.
+  </p>
+</div>

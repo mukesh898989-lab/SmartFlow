@@ -1,0 +1,128 @@
+<div style="min-height:100vh; background:#f0f4f8; padding:24px 16px;">
+  <div style="max-width:520px; margin:0 auto;">
+
+    <div style="margin-bottom:24px; display:flex; align-items:center; gap:16px;">
+      <a routerLink="/patient" style="color:#007bff; text-decoration:none;">← Back</a>
+      <h2 style="color:#1a3c5e;">Get Queue Token</h2>
+    </div>
+
+    <!-- Progress indicator -->
+    <div style="display:flex; gap:0; margin-bottom:32px;">
+      <div *ngFor="let s of ['register', 'token', 'done']; let i = index"
+           style="flex:1; text-align:center; font-size:12px; font-weight:600;"
+           [style.color]="step === s ? '#007bff' : '#adb5bd'">
+        <div style="width:28px; height:28px; border-radius:50%; margin:0 auto 4px;
+                    display:flex; align-items:center; justify-content:center; font-size:13px;"
+             [style.background]="step === s ? '#007bff' : '#dee2e6'"
+             [style.color]="step === s ? '#fff' : '#6c757d'">
+          {{ i + 1 }}
+        </div>
+        {{ s === 'register' ? 'Register' : s === 'token' ? 'Select Doctor' : 'Done' }}
+      </div>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <!-- Step 1: Register -->
+    <div *ngIf="step === 'register'" class="card">
+      <h4 style="margin-bottom:20px;">Patient Information</h4>
+      <form [formGroup]="registerForm" (ngSubmit)="registerPatient()">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input formControlName="name" placeholder="Your full name">
+          <span class="error-msg" *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched">
+            Name is required
+          </span>
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input formControlName="phone" placeholder="10-15 digit phone number">
+          <span class="error-msg" *ngIf="registerForm.get('phone')?.invalid && registerForm.get('phone')?.touched">
+            Valid phone number required
+          </span>
+        </div>
+        <div class="form-group">
+          <label>Email <small style="color:#6c757d;">(optional)</small></label>
+          <input type="email" formControlName="email" placeholder="your@email.com">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" formControlName="age" placeholder="Age">
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select formControlName="gender">
+              <option value="">Select</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" [disabled]="loading">
+          {{ loading ? 'Processing...' : 'Continue →' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Step 2: Select Doctor -->
+    <div *ngIf="step === 'token'" class="card">
+      <h4 style="margin-bottom:4px;">Select Doctor</h4>
+      <p style="color:#6c757d; font-size:13px; margin-bottom:20px;">
+        Registered as: <strong>{{ registeredPatient?.name }}</strong>
+      </p>
+      <form [formGroup]="tokenForm" (ngSubmit)="generateToken()">
+        <div class="form-group">
+          <label>Department *</label>
+          <select formControlName="departmentId">
+            <option [ngValue]="null" disabled>Select department</option>
+            <option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Doctor *</label>
+          <select formControlName="doctorId" [attr.disabled]="!tokenForm.get('departmentId')?.value ? '' : null">
+            <option [ngValue]="null" disabled>Select doctor</option>
+            <option *ngFor="let d of filteredDoctors" [value]="d.id">
+              {{ d.name }} — {{ d.specialization }}
+            </option>
+          </select>
+          <span class="error-msg" *ngIf="tokenForm.get('departmentId')?.value && filteredDoctors.length === 0">
+            No available doctors in this department
+          </span>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" [disabled]="loading || tokenForm.invalid">
+          {{ loading ? 'Generating...' : 'Get My Token' }}
+        </button>
+      </form>
+    </div>
+
+    <!-- Step 3: Token Confirmation -->
+    <div *ngIf="step === 'done' && generatedToken" class="card" style="text-align:center;">
+      <div style="color:#28a745; font-size:48px; margin-bottom:8px;">✓</div>
+      <h3 style="color:#1a3c5e; margin-bottom:8px;">Token Generated!</h3>
+      <p style="color:#6c757d; margin-bottom:24px;">Save this token number to track your queue</p>
+
+      <div style="background:#f0f4f8; border-radius:8px; padding:24px; margin-bottom:24px;">
+        <div class="token-number">{{ generatedToken.tokenNumber }}</div>
+        <p style="margin-top:12px; font-size:15px;">
+          <strong>Doctor:</strong> {{ generatedToken.doctorName }}
+        </p>
+        <p style="font-size:15px;">
+          <strong>Department:</strong> {{ generatedToken.departmentName }}
+        </p>
+        <p style="margin-top:8px;">
+          <span class="badge badge-normal">NORMAL PRIORITY</span>
+        </p>
+      </div>
+
+      <a routerLink="/patient/track" [queryParams]="{ token: generatedToken.tokenNumber }"
+         class="btn btn-primary" style="display:block; margin-bottom:12px; text-decoration:none;">
+        Track My Queue Position
+      </a>
+      <a routerLink="/patient" style="color:#007bff; font-size:14px;">Back to Home</a>
+    </div>
+
+  </div>
+</div>

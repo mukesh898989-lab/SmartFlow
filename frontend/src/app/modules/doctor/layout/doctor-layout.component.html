@@ -1,0 +1,15 @@
+<div class="navbar">
+  <span class="brand">Hospital Queue — Doctor</span>
+  <nav>
+    <a routerLink="/doctor/queue" routerLinkActive="active">My Queue</a>
+  </nav>
+  <div>
+    <span style="color:#cdd9e5;font-size:13px;margin-right:16px;">
+      Dr. {{ auth.getCurrentUser()?.name }}
+    </span>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+</div>
+<div class="container" style="padding-top:24px;">
+  <router-outlet></router-outlet>
+</div>

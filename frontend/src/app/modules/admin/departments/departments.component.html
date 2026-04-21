@@ -1,0 +1,50 @@
+<div class="page-header">
+  <h2>Departments</h2>
+  <p>Create and manage hospital departments</p>
+</div>
+
+<div class="card" style="max-width:480px;">
+  <h4 style="margin-bottom:16px;">Add Department</h4>
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+  <div *ngIf="error"   class="alert alert-danger">{{ error }}</div>
+
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-group">
+      <label>Department Name *</label>
+      <input formControlName="name" placeholder="e.g., Cardiology">
+      <span class="error-msg"
+        *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+        Name is required (min 2 characters)
+      </span>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <input formControlName="description" placeholder="Brief description">
+    </div>
+    <button class="btn btn-primary" [disabled]="loading">
+      {{ loading ? 'Creating...' : 'Create Department' }}
+    </button>
+  </form>
+</div>
+
+<div class="card">
+  <h4 style="margin-bottom:16px;">All Departments ({{ departments.length }})</h4>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Description</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of departments">
+        <td>{{ d.id }}</td>
+        <td>{{ d.name }}</td>
+        <td>{{ d.description || '—' }}</td>
+        <td>
+          <span class="badge" [class.badge-completed]="d.active"
+                [class.badge-waiting]="!d.active">
+            {{ d.active ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

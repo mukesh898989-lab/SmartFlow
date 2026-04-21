@@ -1,0 +1,64 @@
+<div class="page-header">
+  <h2>Queue Management</h2>
+  <p>Manage active patient tokens. Priority updates are reflected in real time.</p>
+</div>
+
+<div *ngIf="success" class="alert alert-success">{{ success }}</div>
+<div *ngIf="error"   class="alert alert-danger">{{ error }}</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <strong>Active Queue ({{ queue.length }} tokens)</strong>
+    <button class="btn btn-secondary" (click)="loadQueue()" [disabled]="loading">Refresh</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Token #</th>
+        <th>Patient</th>
+        <th>Doctor</th>
+        <th>Dept</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Position</th>
+        <th>Change Priority</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let token of queue">
+        <td><strong>{{ token.tokenNumber }}</strong></td>
+        <td>{{ token.patientName }}<br><small>{{ token.patientPhone }}</small></td>
+        <td>{{ token.doctorName }}</td>
+        <td>{{ token.departmentName }}</td>
+        <td><span [class]="getPriorityClass(token.priority)">{{ token.priority }}</span></td>
+        <td><span [class]="getStatusClass(token.status)">{{ token.status }}</span></td>
+        <td>
+          <span *ngIf="token.queuePosition > 0">{{ token.queuePosition }}</span>
+          <span *ngIf="token.queuePosition === 0" style="color:#007bff;">In Progress</span>
+        </td>
+        <td>
+          <select *ngIf="token.status === 'WAITING'"
+            [value]="token.priority"
+            (change)="updatePriority(token, $any($event.target).value)"
+            style="padding:4px;border:1px solid #ced4da;border-radius:4px;font-size:13px;">
+            <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+          </select>
+          <span *ngIf="token.status !== 'WAITING'" style="color:#6c757d;font-size:12px;">—</span>
+        </td>
+        <td>
+          <button *ngIf="token.status === 'WAITING'"
+            class="btn btn-danger"
+            style="font-size:12px;padding:4px 10px;"
+            (click)="removeToken(token)">Remove</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!loading && queue.length === 0"
+     style="text-align:center;color:#6c757d;padding:24px;">
+    Queue is empty.
+  </p>
+</div>

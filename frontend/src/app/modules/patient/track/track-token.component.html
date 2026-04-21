@@ -1,0 +1,67 @@
+<div style="min-height:100vh; background:#f0f4f8; padding:24px 16px;">
+  <div style="max-width:480px; margin:0 auto;">
+
+    <div style="margin-bottom:24px; display:flex; align-items:center; gap:16px;">
+      <a routerLink="/patient" style="color:#007bff; text-decoration:none;">← Back</a>
+      <h2 style="color:#1a3c5e;">Track Your Token</h2>
+    </div>
+
+    <!-- Token Input -->
+    <div class="card">
+      <div style="display:flex; gap:12px;">
+        <input
+          [(ngModel)]="inputToken"
+          placeholder="Enter token number e.g. CARD-20260419-001"
+          style="flex:1; padding:10px 14px; border:1px solid #ced4da; border-radius:4px; font-size:14px; text-transform:uppercase;"
+          (keyup.enter)="trackToken()">
+        <button class="btn btn-primary" (click)="trackToken()" [disabled]="loading || !inputToken.trim()">
+          {{ loading ? '...' : 'Track' }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <!-- Position Display -->
+    <div *ngIf="positionData" class="card" style="text-align:center;">
+      <p style="font-size:13px; color:#6c757d; margin-bottom:4px;">Token</p>
+      <div class="token-number" style="margin-bottom:16px;">{{ positionData.tokenNumber }}</div>
+
+      <div style="margin-bottom:20px;">
+        <span [class]="getStatusClass(positionData.status)" style="font-size:15px; padding:6px 16px;">
+          {{ getStatusLabel(positionData.status) }}
+        </span>
+      </div>
+
+      <!-- Waiting -->
+      <div *ngIf="positionData.status === 'WAITING'" style="background:#f0f4f8; border-radius:8px; padding:24px; margin-bottom:16px;">
+        <p style="color:#6c757d; font-size:13px; margin-bottom:4px;">Your position in queue</p>
+        <div class="queue-position">{{ positionData.position }}</div>
+        <p style="color:#6c757d; font-size:13px; margin-top:8px;">
+          {{ positionData.totalWaiting }} patient(s) waiting
+        </p>
+      </div>
+
+      <!-- In Progress -->
+      <div *ngIf="positionData.status === 'IN_PROGRESS'"
+           style="background:#cce5ff; border-radius:8px; padding:24px; margin-bottom:16px;">
+        <p style="font-size:20px; color:#004085; font-weight:700;">You are being seen now</p>
+        <p style="color:#004085; margin-top:8px;">Please proceed to the consultation room</p>
+      </div>
+
+      <!-- Completed -->
+      <div *ngIf="positionData.status === 'COMPLETED'"
+           style="background:#d4edda; border-radius:8px; padding:24px; margin-bottom:16px;">
+        <p style="font-size:20px; color:#155724; font-weight:700;">Consultation Completed</p>
+        <p style="color:#155724; margin-top:8px;">Thank you for visiting</p>
+      </div>
+
+      <div style="font-size:14px; color:#6c757d;">
+        <p><strong>Doctor:</strong> {{ positionData.doctorName }}</p>
+        <p><strong>Department:</strong> {{ positionData.departmentName }}</p>
+        <p style="margin-top:8px; font-size:12px;">Updates automatically in real time</p>
+      </div>
+    </div>
+
+  </div>
+</div>

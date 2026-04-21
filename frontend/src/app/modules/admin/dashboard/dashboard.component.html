@@ -1,0 +1,47 @@
+<div class="page-header">
+  <h2>Queue Overview</h2>
+  <p>All active patient tokens across all doctors</p>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <strong>Active Tokens ({{ activeTokens.length }})</strong>
+    <button class="btn btn-secondary" (click)="loadQueue()" [disabled]="loading">
+      {{ loading ? 'Refreshing...' : 'Refresh' }}
+    </button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Token #</th>
+        <th>Patient</th>
+        <th>Doctor</th>
+        <th>Department</th>
+        <th>Priority</th>
+        <th>Status</th>
+        <th>Position</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let token of activeTokens">
+        <td><strong>{{ token.tokenNumber }}</strong></td>
+        <td>{{ token.patientName }}<br><small style="color:#6c757d;">{{ token.patientPhone }}</small></td>
+        <td>{{ token.doctorName }}</td>
+        <td>{{ token.departmentName }}</td>
+        <td><span [class]="getPriorityClass(token.priority)">{{ token.priority }}</span></td>
+        <td><span [class]="getStatusClass(token.status)">{{ token.status }}</span></td>
+        <td>
+          <span *ngIf="token.queuePosition > 0"># {{ token.queuePosition }}</span>
+          <span *ngIf="token.queuePosition === 0" class="badge badge-in-progress">In Progress</span>
+          <span *ngIf="token.queuePosition === -1" class="badge badge-completed">Done</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!loading && activeTokens.length === 0"
+     style="text-align:center;color:#6c757d;padding:24px;">
+    No active tokens at this time.
+  </p>
+</div>

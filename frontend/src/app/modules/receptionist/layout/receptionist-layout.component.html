@@ -1,0 +1,17 @@
+<div class="navbar">
+  <span class="brand">Hospital Queue — Receptionist</span>
+  <nav>
+    <a routerLink="/receptionist/queue"          routerLinkActive="active">Queue</a>
+    <a routerLink="/receptionist/register"       routerLinkActive="active">Register Patient</a>
+    <a routerLink="/receptionist/generate-token" routerLinkActive="active">Generate Token</a>
+  </nav>
+  <div>
+    <span style="color:#cdd9e5;font-size:13px;margin-right:16px;">
+      {{ auth.getCurrentUser()?.name }}
+    </span>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
+</div>
+<div class="container" style="padding-top:24px;">
+  <router-outlet></router-outlet>
+</div>
