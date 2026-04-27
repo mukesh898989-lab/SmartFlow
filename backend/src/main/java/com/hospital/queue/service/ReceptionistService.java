@@ -21,6 +21,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -143,6 +144,40 @@ public class ReceptionistService {
 
     public List<TokenResponse> getActiveQueue() {
         return queueService.toTokenResponseList(tokenRepository.findAllActive());
+    }
+
+    // ─── Skip / Recall ────────────────────────────────────────────────────────
+
+    /**
+     * Recalls a skipped patient back into the queue.
+     * The recalled token re-enters as WAITING with the recalled flag set,
+     * which causes QueueService to place it immediately after the current patient.
+     */
+    @Transactional
+    public TokenResponse recallPatient(Long tokenId) {
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Token", tokenId));
+
+        if (token.getStatus() != TokenStatus.SKIPPED) {
+            throw new BusinessException("Only SKIPPED tokens can be recalled");
+        }
+
+        token.setStatus(TokenStatus.WAITING);
+        token.setRecalled(true);
+        token.setRecalledAt(LocalDateTime.now());
+        Token saved = tokenRepository.save(token);
+
+        broadcastQueueUpdate(token.getDoctor());
+        broadcastTokenUpdate(saved);
+
+        return queueService.toTokenResponse(saved);
+    }
+
+    /**
+     * Returns all currently skipped patients across all doctors.
+     */
+    public List<TokenResponse> getSkippedQueue() {
+        return queueService.toTokenResponseList(tokenRepository.findAllSkipped());
     }
 
     // ─── WebSocket Broadcast ──────────────────────────────────────────────────

@@ -46,4 +46,10 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
      */
     @Query("SELECT t FROM Token t WHERE t.status IN ('WAITING', 'IN_PROGRESS') ORDER BY t.createdAt ASC")
     List<Token> findAllActive();
+
+    /**
+     * All skipped tokens across all doctors, ordered by when they were skipped.
+     */
+    @Query("SELECT t FROM Token t WHERE t.status = 'SKIPPED' ORDER BY t.skippedAt ASC")
+    List<Token> findAllSkipped();
 }

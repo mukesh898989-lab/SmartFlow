@@ -37,4 +37,13 @@ export class ReceptionistService {
   getActiveQueue(): Observable<Token[]> {
     return this.http.get<Token[]>(`${this.base}/queue`);
   }
+
+  // Skip / Recall
+  recallToken(tokenId: number): Observable<Token> {
+    return this.http.post<Token>(`${this.base}/tokens/${tokenId}/recall`, {});
+  }
+
+  getSkippedQueue(): Observable<Token[]> {
+    return this.http.get<Token[]>(`${this.base}/skipped-queue`);
+  }
 }

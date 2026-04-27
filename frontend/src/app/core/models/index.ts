@@ -2,7 +2,7 @@
 
 export type Role = 'ADMIN' | 'RECEPTIONIST' | 'DOCTOR';
 export type Priority = 'NORMAL' | 'URGENT' | 'EMERGENCY';
-export type TokenStatus = 'WAITING' | 'IN_PROGRESS' | 'COMPLETED';
+export type TokenStatus = 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
 export type RegistrationMode = 'SELF' | 'RECEPTIONIST';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -112,6 +112,9 @@ export interface Token {
   generatedBy: RegistrationMode;
   createdAt: string;
   updatedAt: string;
+  skippedAt?: string;
+  recalled?: boolean;
+  recalledAt?: string;
   queuePosition: number;
 }
 

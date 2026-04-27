@@ -11,7 +11,9 @@ import { Token, Priority } from '../../../core/models';
 export class QueueManageComponent implements OnInit, OnDestroy {
 
   queue: Token[] = [];
+  skippedQueue: Token[] = [];
   loading = false;
+  skippedLoading = false;
   error = '';
   success = '';
 
@@ -23,7 +25,10 @@ export class QueueManageComponent implements OnInit, OnDestroy {
     private ws: WebSocketService
   ) {}
 
-  ngOnInit(): void { this.loadQueue(); }
+  ngOnInit(): void {
+    this.loadQueue();
+    this.loadSkippedQueue();
+  }
 
   loadQueue(): void {
     this.wsSubs.forEach(s => s.unsubscribe());
@@ -37,6 +42,14 @@ export class QueueManageComponent implements OnInit, OnDestroy {
         doctorIds.forEach(id => this.subscribeToDoctor(id));
       },
       error: () => { this.loading = false; }
+    });
+  }
+
+  loadSkippedQueue(): void {
+    this.skippedLoading = true;
+    this.receptionistService.getSkippedQueue().subscribe({
+      next: tokens => { this.skippedQueue = tokens; this.skippedLoading = false; },
+      error: () => { this.skippedLoading = false; }
     });
   }
 
@@ -64,6 +77,19 @@ export class QueueManageComponent implements OnInit, OnDestroy {
     });
   }
 
+  recallToken(token: Token): void {
+    if (!confirm(`Recall ${token.tokenNumber} – ${token.patientName}? They will be placed as the next patient after the current consultation.`)) return;
+    this.receptionistService.recallToken(token.id).subscribe({
+      next: recalled => {
+        this.skippedQueue = this.skippedQueue.filter(t => t.id !== recalled.id);
+        this.success = `${recalled.tokenNumber} recalled — placed as next in line.`;
+        this.loadQueue();
+        setTimeout(() => this.success = '', 5000);
+      },
+      error: err => { this.error = err.error?.message ?? 'Failed to recall token.'; }
+    });
+  }
+
   getPriorityClass(p: string): string {
     return `badge badge-${p.toLowerCase()}`;
   }
@@ -74,11 +100,13 @@ export class QueueManageComponent implements OnInit, OnDestroy {
 
   private subscribeToDoctor(doctorId: number): void {
     const sub = this.ws.subscribeToQueue<Token[]>(doctorId).subscribe(updatedQueue => {
-      // Queue broadcasts contain only WAITING tokens — preserve IN_PROGRESS tokens when merging.
+      // Preserve IN_PROGRESS tokens, replace WAITING tokens from broadcast
       this.queue = [
         ...this.queue.filter(t => t.doctorId !== doctorId || t.status === 'IN_PROGRESS'),
         ...updatedQueue
       ];
+      // Refresh skipped list whenever queue changes (a skip may have just occurred)
+      this.loadSkippedQueue();
     });
     this.wsSubs.push(sub);
   }

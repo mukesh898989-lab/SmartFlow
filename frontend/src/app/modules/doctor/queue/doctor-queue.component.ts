@@ -78,6 +78,24 @@ export class DoctorQueueComponent implements OnInit, OnDestroy {
     });
   }
 
+  skipToken(token: Token): void {
+    if (!confirm(`Skip ${token.tokenNumber} – ${token.patientName}? They will be moved to the Skipped list and can be recalled later.`)) return;
+    this.actionLoading = true;
+    this.error = '';
+    this.doctorService.skipToken(token.id).subscribe({
+      next: () => {
+        this.success = `Token ${token.tokenNumber} skipped. Receptionist can recall when patient returns.`;
+        this.loadQueue();
+        this.actionLoading = false;
+        setTimeout(() => this.success = '', 5000);
+      },
+      error: err => {
+        this.error = err.error?.message ?? 'Failed to skip token.';
+        this.actionLoading = false;
+      }
+    });
+  }
+
   getPriorityClass(p: string): string {
     return `badge badge-${p.toLowerCase()}`;
   }
@@ -91,14 +109,12 @@ export class DoctorQueueComponent implements OnInit, OnDestroy {
     const user = this.auth.getCurrentUser();
     if (!user) return;
 
-    // Use doctorId from the first token if available, or fall back to userId
     const doctorId = this.currentToken?.doctorId ?? this.queue[0]?.doctorId;
     if (doctorId == null) return;
 
     this.wsSub?.unsubscribe();
     this.wsSub = this.ws.subscribeToQueue<Token[]>(doctorId).subscribe(updated => {
-      // Queue broadcasts contain only WAITING tokens — update the waiting list only.
-      // currentToken is managed exclusively by explicit doctor actions (callNext / complete).
+      // Queue broadcasts contain only WAITING tokens
       this.queue = updated.filter(t => t.status === 'WAITING');
     });
   }

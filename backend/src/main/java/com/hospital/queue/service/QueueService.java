@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,22 +32,36 @@ public class QueueService {
 
     /**
      * Returns the WAITING queue for a doctor in correct priority order.
+     * Recalled tokens (patients who returned after being skipped) are placed first,
+     * so they become the next patient after whoever is currently IN_PROGRESS.
      */
     public List<Token> getOrderedWaitingQueue(Doctor doctor) {
         List<Token> waiting = tokenRepository.findByDoctorAndStatus(doctor, TokenStatus.WAITING);
-        waiting.sort(Comparator
-                .comparingInt((Token t) -> t.getPriority().getOrder())
-                .thenComparing(Token::getCreatedAt));
+        waiting.sort((a, b) -> {
+            boolean aRecalled = Boolean.TRUE.equals(a.getRecalled());
+            boolean bRecalled = Boolean.TRUE.equals(b.getRecalled());
+
+            // Recalled tokens always jump to the front of the waiting queue
+            if (aRecalled != bRecalled) return aRecalled ? -1 : 1;
+
+            // Multiple recalled tokens: earliest recall time first
+            if (aRecalled) return a.getRecalledAt().compareTo(b.getRecalledAt());
+
+            // Normal WAITING tokens: priority first, then arrival time
+            int priCmp = Integer.compare(a.getPriority().getOrder(), b.getPriority().getOrder());
+            return priCmp != 0 ? priCmp : a.getCreatedAt().compareTo(b.getCreatedAt());
+        });
         return waiting;
     }
 
     /**
      * Calculates the 1-based queue position for a WAITING token.
-     * Returns 0 if IN_PROGRESS, -1 if COMPLETED.
+     * Returns 0 if IN_PROGRESS, -1 if COMPLETED or SKIPPED.
      */
     public int getQueuePosition(Token token) {
         if (token.getStatus() == TokenStatus.IN_PROGRESS) return 0;
         if (token.getStatus() == TokenStatus.COMPLETED) return -1;
+        if (token.getStatus() == TokenStatus.SKIPPED) return -1;
 
         List<Token> queue = getOrderedWaitingQueue(token.getDoctor());
         for (int i = 0; i < queue.size(); i++) {
@@ -106,6 +119,9 @@ public class QueueService {
                 .generatedBy(token.getGeneratedBy())
                 .createdAt(token.getCreatedAt())
                 .updatedAt(token.getUpdatedAt())
+                .skippedAt(token.getSkippedAt())
+                .recalled(token.getRecalled())
+                .recalledAt(token.getRecalledAt())
                 .queuePosition(getQueuePosition(token))
                 .build();
     }

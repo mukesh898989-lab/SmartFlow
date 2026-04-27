@@ -13,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -117,11 +118,39 @@ public class DoctorService {
         return queueService.toTokenResponse(saved);
     }
 
+    /**
+     * Skips a WAITING patient who is absent when called.
+     * Status changes to SKIPPED; the token is held for potential recall by receptionist.
+     */
+    @Transactional
+    public TokenResponse skipPatient(Long tokenId, Long userId) {
+        Doctor doctor = getDoctorByUserId(userId);
+        Token token = tokenRepository.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Token", tokenId));
+
+        if (!token.getDoctor().getId().equals(doctor.getId())) {
+            throw new BusinessException("This token does not belong to your queue");
+        }
+        if (token.getStatus() != TokenStatus.WAITING) {
+            throw new BusinessException("Only WAITING tokens can be skipped");
+        }
+
+        token.setStatus(TokenStatus.SKIPPED);
+        token.setSkippedAt(LocalDateTime.now());
+        Token saved = tokenRepository.save(token);
+
+        broadcastQueueUpdate(doctor);
+        broadcastTokenUpdate(saved);
+
+        return queueService.toTokenResponse(saved);
+    }
+
     private void validateStatusTransition(TokenStatus current, TokenStatus next) {
         boolean valid = switch (current) {
             case WAITING -> next == TokenStatus.IN_PROGRESS;
             case IN_PROGRESS -> next == TokenStatus.COMPLETED;
             case COMPLETED -> false;
+            case SKIPPED -> false; // use /recall endpoint to restore a skipped token
         };
         if (!valid) {
             throw new BusinessException(

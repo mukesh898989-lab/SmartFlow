@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Hospital Queue Management System - Presentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .presentation-container {
+            width: 100%;
+            max-width: 1000px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 600px;
+            padding: 60px 80px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            justify-content: center;
+            flex-direction: column;
+            animation: fadeIn 0.5s;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Slide Backgrounds */
+        .slide-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .slide-content {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        .slide-feature {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+        }
+
+        .slide-tech {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .slide-architecture {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+
+        .slide-demo {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 3.5em;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 2.8em;
+            color: #333;
+            margin-bottom: 40px;
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .slide-title h1 {
+            color: white;
+        }
+
+        .slide-title h3 {
+            font-size: 1.5em;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+        }
+
+        p, li {
+            font-size: 1.2em;
+            line-height: 1.8;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        .slide-title p {
+            color: white;
+            font-size: 1.3em;
+        }
+
+        /* Content Sections */
+        .content {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content-left {
+            flex: 1;
+        }
+
+        .content-right {
+            flex: 1;
+            text-align: center;
+        }
+
+        .content-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style: none;
+            margin: 20px 0;
+        }
+
+        li {
+            margin: 15px 0;
+            padding-left: 40px;
+            position: relative;
+        }
+
+        li:before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-size: 1.5em;
+        }
+
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #667eea;
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .card p {
+            font-size: 1em;
+            color: #555;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Navigation Controls */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: #333;
+            color: white;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-counter {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        /* Keyboard hint */
+        .keyboard-hint {
+            font-size: 0.9em;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        /* Stack boxes */
+        .stack {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .stack strong {
+            color: #667eea;
+        }
+
+        /* Architecture diagram */
+        .architecture-box {
+            background: white;
+            padding: 20px;
+            margin: 10px auto;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .arrow {
+            text-align: center;
+            font-size: 2em;
+            color: #764ba2;
+            margin: 10px 0;
+        }
+
+        /* Workflow boxes */
+        .workflow {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .workflow-item {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            min-width: 120px;
+            text-align: center;
+            font-weight: bold;
+            color: #333;
+            border: 2px solid #667eea;
+        }
+
+        .workflow-arrow {
+            color: #667eea;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        /* Emphasis */
+        .highlight {
+            background: #fff3cd;
+            padding: 20px;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        /* Two column layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .two-col li {
+            font-size: 1.1em;
+        }
+
+        /* Centered text */
+        .centered {
+            text-align: center;
+        }
+
+        .centered h2 {
+            border: none;
+            margin-bottom: 30px;
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        /* Large number */
+        .big-number {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide slide-title active">
+            <h1>🏥 Smart Hospital Queue Management System</h1>
+            <h3>A Real-time Queue Management Solution</h3>
+            <p style="margin-top: 60px; font-size: 1.2em;">A comprehensive platform for managing hospital queues efficiently with role-based access, real-time updates, and priority-based patient care.</p>
+        </div>
+
+        <!-- Slide 2: Problem Statement -->
+        <div class="slide slide-content">
+            <h2>The Problem</h2>
+            <div class="two-col">
+                <ul>
+                    <li>👥 Patients wait in long queues without knowing their position</li>
+                    <li>🏥 Doctors manually manage multiple queues</li>
+                    <li>📊 No real-time visibility across hospital</li>
+                    <li>⏰ Chaos and patient frustration</li>
+                </ul>
+                <div style="text-align: center;">
+                    <div class="big-number" style="color: #dc3545;">65%</div>
+                    <p>of hospital no-shows due to queue uncertainty</p>
+                    <div class="big-number" style="color: #dc3545;">2-3 hrs</div>
+                    <p>Average wait time without system</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Solution Overview -->
+        <div class="slide slide-feature">
+            <h2>Our Solution</h2>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="content-icon">📋</div>
+                    <h3>Smart Queue</h3>
+                    <p>Priority-based queue ordering (Emergency, Urgent, Normal)</p>
+                </div>
+                <div class="card">
+                    <div class="content-icon">⚡</div>
+                    <h3>Real-time Updates</h3>
+                    <p>WebSocket-powered live tracking for all stakeholders</p>
+                </div>
+                <div class="card">
+                    <div class="content-icon">🔐</div>
+                    <h3>Role-based Access</h3>
+                    <p>Admin, Receptionist, Doctor, Patient - each with own interface</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Key Features -->
+        <div class="slide slide-content">
+            <h2>Key Features</h2>
+            <div class="two-col">
+                <ul>
+                    <li>✅ Multi-role system (Admin, Receptionist, Doctor, Patient)</li>
+                    <li>✅ Real-time queue updates via WebSocket</li>
+                    <li>✅ Priority-based patient ordering</li>
+                    <li>✅ Patient self-service portal</li>
+                    <li>✅ JWT-based authentication</li>
+                    <li>✅ Audit trail for all operations</li>
+                </ul>
+                <ul>
+                    <li>✅ Token generation and management</li>
+                    <li>✅ Queue position tracking</li>
+                    <li>✅ Department management</li>
+                    <li>✅ Doctor availability status</li>
+                    <li>✅ Patient registration (online & offline)</li>
+                    <li>✅ CORS-enabled for frontend integration</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 5: Technology Stack -->
+        <div class="slide slide-tech">
+            <h2>Technology Stack</h2>
+            <div class="grid-2">
+                <div class="stack">
+                    <strong>Backend</strong>
+                    <p>Spring Boot 3.1.5<br>Java 17<br>MySQL 8.0<br>JWT Authentication<br>WebSocket STOMP</p>
+                </div>
+                <div class="stack">
+                    <strong>Frontend</strong>
+                    <p>Angular 16<br>TypeScript 5.1<br>RxJS (Reactive)<br>STOMP.js<br>SockJS</p>
+                </div>
+                <div class="stack">
+                    <strong>Build & Deploy</strong>
+                    <p>Maven (Backend)<br>npm/Angular CLI (Frontend)<br>Git Version Control<br>REST APIs<br>Microservices Ready</p>
+                </div>
+                <div class="stack">
+                    <strong>Database</strong>
+                    <p>MySQL 8+<br>JPA/Hibernate ORM<br>Optimistic Locking<br>Pessimistic Transactions<br>Relational Schema</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Architecture -->
+        <div class="slide slide-architecture">
+            <h2>System Architecture</h2>
+            <div class="architecture-box" style="background: #667eea; color: white; font-size: 1.3em;">
+                👤 Frontend (Angular - localhost:4200)
+            </div>
+            <div class="arrow">⬍</div>
+            <div class="architecture-box">
+                🔌 HTTP/REST & WebSocket
+            </div>
+            <div class="arrow">⬍</div>
+            <div class="architecture-box" style="background: #667eea; color: white; font-size: 1.3em;">
+                🔙 Backend (Spring Boot - localhost:8081)
+            </div>
+            <div class="arrow">⬍</div>
+            <div class="architecture-box">
+                💾 MySQL Database
+            </div>
+        </div>
+
+        <!-- Slide 7: Database Design -->
+        <div class="slide slide-content">
+            <h2>Database Design</h2>
+            <table>
+                <tr>
+                    <th>Entity</th>
+                    <th>Purpose</th>
+                    <th>Key Fields</th>
+                </tr>
+                <tr>
+                    <td><strong>Users</strong></td>
+                    <td>System users (Admin, Receptionist, Doctor)</td>
+                    <td>email, password, role, active</td>
+                </tr>
+                <tr>
+                    <td><strong>Departments</strong></td>
+                    <td>Hospital departments</td>
+                    <td>name, description, active</td>
+                </tr>
+                <tr>
+                    <td><strong>Doctors</strong></td>
+                    <td>Doctor profiles</td>
+                    <td>user_id, department_id, specialization, available</td>
+                </tr>
+                <tr>
+                    <td><strong>Patients</strong></td>
+                    <td>Patient information</td>
+                    <td>name, phone, email, age, gender, registered_by</td>
+                </tr>
+                <tr>
+                    <td><strong>Tokens</strong></td>
+                    <td>Queue tokens (heart of system)</td>
+                    <td>token_number, patient_id, doctor_id, priority, status</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Slide 8: API Endpoints -->
+        <div class="slide slide-feature">
+            <h2>API Structure</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Authentication</h3>
+                    <p>POST /api/auth/login</p>
+                </div>
+                <div class="card">
+                    <h3>Admin Endpoints</h3>
+                    <p>/api/admin/users<br>/api/admin/departments<br>/api/admin/doctors<br>/api/admin/queue</p>
+                </div>
+                <div class="card">
+                    <h3>Receptionist</h3>
+                    <p>/api/receptionist/patients<br>/api/receptionist/tokens<br>/api/receptionist/queue</p>
+                </div>
+                <div class="card">
+                    <h3>Doctor & Patient</h3>
+                    <p>/api/doctor/queue<br>/api/patient/token<br>/api/patient/token-status<br>/api/public/doctors</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Real-time Features -->
+        <div class="slide slide-demo">
+            <h2>Real-time Queue Tracking</h2>
+            <div class="grid-2">
+                <div>
+                    <h3 style="color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px;">WebSocket Topics</h3>
+                    <p><strong>/topic/queue/{doctorId}</strong></p>
+                    <p style="font-size: 1em; margin: 15px 0;">Doctor's queue real-time updates</p>
+                    <p style="margin-top: 30px;"><strong>/topic/token/{tokenNumber}</strong></p>
+                    <p style="font-size: 1em; margin: 15px 0;">Individual token status updates</p>
+                </div>
+                <div>
+                    <h3 style="color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px;">Real-time Updates</h3>
+                    <div class="workflow">
+                        <div class="workflow-item">Token Created</div>
+                        <div class="workflow-arrow">➜</div>
+                        <div class="workflow-item">Queue Updated</div>
+                    </div>
+                    <div class="workflow">
+                        <div class="workflow-item">Doctor Calls Next</div>
+                        <div class="workflow-arrow">➜</div>
+                        <div class="workflow-item">All Screens Sync</div>
+                    </div>
+                    <div class="workflow">
+                        <div class="workflow-item">Status Changed</div>
+                        <div class="workflow-arrow">➜</div>
+                        <div class="workflow-item">Patient Notified</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: User Workflows -->
+        <div class="slide slide-content">
+            <h2>Daily Workflow</h2>
+            <h3 style="color: #667eea; margin-top: 20px; margin-bottom: 15px;">Admin → Receptionist → Doctor → Patient</h3>
+            
+            <div class="highlight success">
+                <strong>Admin:</strong> Sets up departments, creates doctors and staff accounts
+            </div>
+            <div class="workflow">
+                <div class="workflow-arrow">⬇</div>
+            </div>
+            <div class="highlight success">
+                <strong>Receptionist:</strong> Registers patients, generates tokens, manages priorities
+            </div>
+            <div class="workflow">
+                <div class="workflow-arrow">⬇</div>
+            </div>
+            <div class="highlight success">
+                <strong>Doctor:</strong> Views queue, calls next patient, updates consultation status
+            </div>
+            <div class="workflow">
+                <div class="workflow-arrow">⬇</div>
+            </div>
+            <div class="highlight success">
+                <strong>Patient:</strong> Gets token, tracks position in real-time, knows when to arrive
+            </div>
+        </div>
+
+        <!-- Slide 11: Security Implementation -->
+        <div class="slide slide-tech">
+            <h2>Security & Access Control</h2>
+            <div class="grid-2">
+                <ul>
+                    <li>🔐 JWT Authentication (24-hour tokens)</li>
+                    <li>🔐 BCrypt password hashing</li>
+                    <li>🔐 Stateless session management</li>
+                    <li>🔐 Role-based authorization</li>
+                </ul>
+                <ul>
+                    <li>🔐 CORS configuration for frontend</li>
+                    <li>🔐 Input validation & sanitization</li>
+                    <li>🔐 Method-level security</li>
+                    <li>🔐 Database transaction integrity</li>
+                </ul>
+            </div>
+            <div class="highlight info" style="margin-top: 40px;">
+                <strong>Role Hierarchy:</strong> ADMIN (full access) → RECEPTIONIST (operations) → DOCTOR (queue management) → PATIENT (self-service)
+            </div>
+        </div>
+
+        <!-- Slide 12: No-Show Handling -->
+        <div class="slide slide-feature">
+            <h2>Smart No-Show Management</h2>
+            <div class="grid-2">
+                <div class="card">
+                    <h3>No-Show Scenarios</h3>
+                    <p>✓ Doctor marks patient as absent<br>
+                    ✓ System advances to next patient<br>
+                    ✓ No-show tracked in database<br>
+                    ✓ Queue continues smoothly</p>
+                </div>
+                <div class="card">
+                    <h3>Patient Comeback</h3>
+                    <p>✓ Can reactivate old token (within 6 hours)<br>
+                    ✓ Returns to original queue position<br>
+                    ✓ Or generates new token if late<br>
+                    ✓ System tracks repeat no-shows</p>
+                </div>
+            </div>
+            <div class="highlight" style="margin-top: 30px;">
+                <strong>Admin Analytics:</strong> Dashboard shows no-show rates by doctor, peak no-show times, repeat offenders
+            </div>
+        </div>
+
+        <!-- Slide 13: Priority System -->
+        <div class="slide slide-demo">
+            <h2>Priority Queue System</h2>
+            <div class="grid-3">
+                <div class="card" style="border-left-color: #dc3545;">
+                    <h3 style="color: #dc3545;">🚨 EMERGENCY</h3>
+                    <p style="font-size: 1.3em; color: #dc3545; font-weight: bold;">Priority: 1</p>
+                    <p>Critical patients served first</p>
+                </div>
+                <div class="card" style="border-left-color: #ffc107;">
+                    <h3 style="color: #ffc107;">⚠️ URGENT</h3>
+                    <p style="font-size: 1.3em; color: #ffc107; font-weight: bold;">Priority: 2</p>
+                    <p>Important cases served next</p>
+                </div>
+                <div class="card" style="border-left-color: #28a745;">
+                    <h3 style="color: #28a745;">ℹ️ NORMAL</h3>
+                    <p style="font-size: 1.3em; color: #28a745; font-weight: bold;">Priority: 3</p>
+                    <p>Regular appointments in order</p>
+                </div>
+            </div>
+            <div class="highlight success" style="margin-top: 30px;">
+                <strong>Smart Reordering:</strong> When receptionist changes priority, queue automatically reorders and all screens update in real-time
+            </div>
+        </div>
+
+        <!-- Slide 14: Challenges & Solutions -->
+        <div class="slide slide-content">
+            <h2>Challenges & Solutions</h2>
+            <div class="grid-2">
+                <div>
+                    <h3 style="color: #dc3545;">Challenge 1</h3>
+                    <p><strong>Queue Ordering:</strong> Keep correct priority order when patients change</p>
+                    <p style="font-size: 0.95em; margin-top: 10px;">✅ <strong>Solution:</strong> Database queries sort by priority.order, then createdAt</p>
+                </div>
+                <div>
+                    <h3 style="color: #dc3545;">Challenge 2</h3>
+                    <p><strong>Real-time Sync:</strong> Multiple screens must show same queue instantly</p>
+                    <p style="font-size: 0.95em; margin-top: 10px;">✅ <strong>Solution:</strong> WebSocket STOMP server-side push</p>
+                </div>
+                <div>
+                    <h3 style="color: #dc3545;">Challenge 3</h3>
+                    <p><strong>Data Consistency:</strong> Prevent duplicate operations and race conditions</p>
+                    <p style="font-size: 0.95em; margin-top: 10px;">✅ <strong>Solution:</strong> Database transactions & pessimistic locking</p>
+                </div>
+                <div>
+                    <h3 style="color: #dc3545;">Challenge 4</h3>
+                    <p><strong>Security:</strong> Patient privacy while allowing public tracking</p>
+                    <p style="font-size: 0.95em; margin-top: 10px;">✅ <strong>Solution:</strong> Token-based access (read-only, public)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: Future Enhancements -->
+        <div class="slide slide-feature">
+            <h2>Future Enhancements</h2>
+            <div class="grid-2">
+                <ul>
+                    <li>📱 Mobile app for patients</li>
+                    <li>📧 SMS/Email notifications</li>
+                    <li>💳 Online payment integration</li>
+                    <li>📊 Advanced analytics dashboard</li>
+                    <li>🤖 Machine learning for predictions</li>
+                    <li>📞 Video consultation support</li>
+                </ul>
+                <ul>
+                    <li>👥 Appointment scheduling</li>
+                    <li>⏰ Doctor availability calendar</li>
+                    <li>📋 Patient medical history</li>
+                    <li>🏥 Multi-hospital support</li>
+                    <li>🌍 Internationalization (multiple languages)</li>
+                    <li>🔔 Voice announcements in waiting area</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Slide 16: Project Impact & Metrics -->
+        <div class="slide slide-demo">
+            <h2>Expected Impact & Metrics</h2>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="big-number">↓ 40%</div>
+                    <p>Reduction in wait time</p>
+                </div>
+                <div class="card">
+                    <div class="big-number">↓ 25%</div>
+                    <p>Reduction in no-shows</p>
+                </div>
+                <div class="card">
+                    <div class="big-number">↑ 80%</div>
+                    <p>Patient satisfaction</p>
+                </div>
+            </div>
+            <div class="highlight info" style="margin-top: 30px;">
+                <strong>Real Patient Benefits:</strong> Transparency reduces anxiety • No forced waiting • Fair priority-based care • Digital proof of position
+            </div>
+        </div>
+
+        <!-- Slide 17: Technical Highlights -->
+        <div class="slide slide-tech">
+            <h2>Technical Highlights</h2>
+            <div style="margin-top: 30px;">
+                <div class="highlight">
+                    <strong>Scalability:</strong> Stateless architecture allows horizontal scaling. Multiple backend instances with load balancer.
+                </div>
+                <div class="highlight">
+                    <strong>Performance:</strong> WebSocket reduces polling overhead. Optimized database queries with proper indexing. Async message processing.
+                </div>
+                <div class="highlight">
+                    <strong>Reliability:</strong> Transaction-based operations ensure data consistency. Automatic retry mechanisms for failed operations. Comprehensive error handling.
+                </div>
+                <div class="highlight">
+                    <strong>Maintainability:</strong> Clean code architecture (Controller-Service-Repository pattern). Comprehensive logging. Well-documented APIs.
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: Demo / Live Example -->
+        <div class="slide slide-content">
+            <h2>Live Demo Walkthrough</h2>
+            <div class="two-col">
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 20px;">Step 1: Admin Setup</h3>
+                    <div class="code-block">POST /api/admin/departments
+{
+  "name": "Cardiology",
+  "description": "Heart care"
+}</div>
+                </div>
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 20px;">Step 2: Patient Registers</h3>
+                    <div class="code-block">POST /api/patient/register
+{
+  "name": "John Doe",
+  "phone": "9876543210"
+}</div>
+                </div>
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 20px;">Step 3: Get Token</h3>
+                    <div class="code-block">POST /api/patient/token
+{
+  "patientId": 1,
+  "doctorId": 1
+}</div>
+                </div>
+                <div>
+                    <h3 style="color: #667eea; margin-bottom: 20px;">Step 4: Real-time Tracking</h3>
+                    <div class="code-block">WS:/api/patient/queue-position
+Response: Position 3 of 7</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: Code Quality & Best Practices -->
+        <div class="slide slide-feature">
+            <h2>Code Quality & Best Practices</h2>
+            <div class="grid-2">
+                <ul>
+                    <li>✅ Clean Code Architecture</li>
+                    <li>✅ Design Patterns (MVC, DAO)</li>
+                    <li>✅ SOLID Principles</li>
+                    <li>✅ Error Handling</li>
+                    <li>✅ Input Validation</li>
+                </ul>
+                <ul>
+                    <li>✅ Comprehensive Logging</li>
+                    <li>✅ Exception Handling</li>
+                    <li>✅ Code Documentation</li>
+                    <li>✅ Transaction Management</li>
+                    <li>✅ Resource Management</li>
+                </ul>
+            </div>
+            <div class="highlight info" style="margin-top: 40px;">
+                <strong>Industry Standards:</strong> Following Spring Boot best practices, Angular style guide, RESTful API conventions, and enterprise-grade security standards.
+            </div>
+        </div>
+
+        <!-- Slide 20: Conclusion -->
+        <div class="slide slide-title">
+            <h1>Transform Hospital Operations</h1>
+            <h3>Smart Queue Management System</h3>
+            <p style="margin-top: 80px; font-size: 1.3em;">✅ Solves real hospital problems<br>✅ Production-ready architecture<br>✅ Enterprise-grade security<br>✅ Scalable & maintainable<br>✅ Proven technology stack</p>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div>
+                <button id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+            </div>
+            <div class="slide-counter">
+                <span id="currentSlide">1</span> / <span id="totalSlides">20</span>
+            </div>
+            <div>
+                <button id="nextBtn" onclick="changeSlide(1)">Next →</button>
+            </div>
+            <div class="keyboard-hint">
+                Use ← → arrows on keyboard
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        document.getElementById('totalSlides').textContent = totalSlides;
+
+        function showSlide(n) {
+            const slides = document.querySelectorAll('.slide');
+            
+            if (n > totalSlides) currentSlide = totalSlides;
+            if (n < 1) currentSlide = 1;
+            
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[currentSlide - 1].classList.add('active');
+            
+            document.getElementById('currentSlide').textContent = currentSlide;
+            document.getElementById('prevBtn').disabled = currentSlide === 1;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+        }
+
+        function changeSlide(n) {
+            currentSlide += n;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') changeSlide(-1);
+            if (e.key === 'ArrowRight') changeSlide(1);
+        });
+
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>

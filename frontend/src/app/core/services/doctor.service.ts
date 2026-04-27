@@ -22,4 +22,8 @@ export class DoctorService {
   updateTokenStatus(tokenId: number, request: UpdateStatusRequest): Observable<Token> {
     return this.http.put<Token>(`${this.base}/tokens/${tokenId}/status`, request);
   }
+
+  skipToken(tokenId: number): Observable<Token> {
+    return this.http.post<Token>(`${this.base}/tokens/${tokenId}/skip`, {});
+  }
 }

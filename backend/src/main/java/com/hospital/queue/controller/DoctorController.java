@@ -58,4 +58,15 @@ public class DoctorController {
         return ResponseEntity.ok(
                 doctorService.updateTokenStatus(id, request.getStatus(), userId));
     }
+
+    /**
+     * POST /api/doctor/tokens/{id}/skip
+     * Skips an absent patient: WAITING → SKIPPED.
+     * The next waiting patient automatically becomes the current patient.
+     */
+    @PostMapping("/tokens/{id}/skip")
+    public ResponseEntity<TokenResponse> skipToken(@PathVariable Long id) {
+        Long userId = securityUtils.getCurrentUserId();
+        return ResponseEntity.ok(doctorService.skipPatient(id, userId));
+    }
 }

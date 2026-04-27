@@ -51,6 +51,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/patient/token-status/**").permitAll()
                 .requestMatchers("/api/patient/queue-position/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+
+                .requestMatchers("/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/api-docs/**",
+                    "/v3/api-docs/**"
+                ).permitAll()
                 // WebSocket
                 .requestMatchers("/ws/**").permitAll()
                 // Role-based access

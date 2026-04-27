@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Hospital Queue Management System - API Documentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 40px;
+            color: #333;
+        }
+        h1, h2, h3, h4 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h1 { font-size: 2.5em; margin-bottom: 30px; }
+        h2 { font-size: 2em; margin-top: 40px; }
+        h3 { font-size: 1.5em; margin-top: 30px; }
+        h4 { font-size: 1.2em; margin-top: 20px; }
+        .endpoint {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .method {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .url {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .code-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .status-codes {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart Hospital Queue Management System - API Documentation</h1>
+
+    <h2>Overview</h2>
+    <p>This document provides comprehensive API documentation for the Smart Hospital Queue Management System. The system provides RESTful APIs for managing hospital queues with role-based access control and real-time WebSocket updates.</p>
+
+    <div class="endpoint">
+        <strong>Base URL:</strong> <span class="url">http://localhost:8081/api</span><br>
+        <strong>Authentication:</strong> JWT Bearer Token<br>
+        <strong>Content-Type:</strong> application/json
+    </div>
+
+    <h2>Authentication</h2>
+
+    <h3>POST /api/auth/login</h3>
+    <p>Authenticate staff users (Admin, Receptionist, Doctor) and receive JWT token.</p>
+
+    <h4>Request Body:</h4>
+    <div class="code-block">
+{
+  "email": "admin@hospital.com",
+  "password": "Admin@123"
+}
+    </div>
+
+    <h4>Response:</h4>
+    <div class="code-block">
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "type": "Bearer",
+  "userId": 1,
+  "name": "System Admin",
+  "email": "admin@hospital.com",
+  "role": "ADMIN"
+}
+    </div>
+
+    <div class="status-codes">
+        <strong>Status Codes:</strong> 200 OK, 401 Unauthorized
+    </div>
+
+    <h2>Admin Endpoints</h2>
+    <div class="warning">All endpoints require ADMIN role</div>
+
+    <h3>User Management</h3>
+
+    <h4>POST /api/admin/users</h4>
+    <p>Create a new staff user (Admin/Receptionist).</p>
+    <div class="code-block">
+{
+  "name": "John Doe",
+  "email": "john@hospital.com",
+  "password": "password123",
+  "role": "RECEPTIONIST"
+}
+    </div>
+    <div class="status-codes">Status Codes: 201 Created, 400 Bad Request, 403 Forbidden</div>
+
+    <h4>GET /api/admin/users</h4>
+    <p>List all staff users.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h4>PUT /api/admin/users/{id}/activate</h4>
+    <p>Activate a user account.</p>
+    <div class="status-codes">Status Codes: 200 OK, 404 Not Found</div>
+
+    <h4>PUT /api/admin/users/{id}/deactivate</h4>
+    <p>Deactivate a user account.</p>
+    <div class="status-codes">Status Codes: 200 OK, 404 Not Found</div>
+
+    <h3>Department Management</h3>
+
+    <h4>POST /api/admin/departments</h4>
+    <p>Create a new department.</p>
+    <div class="code-block">
+{
+  "name": "Cardiology",
+  "description": "Heart and cardiovascular care"
+}
+    </div>
+    <div class="status-codes">Status Codes: 201 Created, 400 Bad Request</div>
+
+    <h4>GET /api/admin/departments</h4>
+    <p>List all departments.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h4>PUT /api/admin/departments/{id}</h4>
+    <p>Update department details.</p>
+    <div class="status-codes">Status Codes: 200 OK, 404 Not Found</div>
+
+    <h3>Doctor Management</h3>
+
+    <h4>POST /api/admin/doctors</h4>
+    <p>Create a new doctor (creates User + Doctor profile).</p>
+    <div class="code-block">
+{
+  "name": "Dr. Smith",
+  "email": "smith@hospital.com",
+  "password": "password123",
+  "departmentId": 1,
+  "specialization": "Cardiologist"
+}
+    </div>
+    <div class="status-codes">Status Codes: 201 Created, 400 Bad Request</div>
+
+    <h4>GET /api/admin/doctors</h4>
+    <p>List all doctors.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h4>PUT /api/admin/doctors/{id}</h4>
+    <p>Update doctor details.</p>
+    <div class="status-codes">Status Codes: 200 OK, 404 Not Found</div>
+
+    <h3>Queue Overview</h3>
+
+    <h4>GET /api/admin/queue</h4>
+    <p>View all active tokens across all doctors.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h2>Receptionist Endpoints</h2>
+    <div class="warning">All endpoints require RECEPTIONIST role</div>
+
+    <h3>Patient Management</h3>
+
+    <h4>POST /api/receptionist/patients</h4>
+    <p>Register a patient offline.</p>
+    <div class="code-block">
+{
+  "name": "John Doe",
+  "phone": "1234567890",
+  "email": "john@example.com",
+  "age": 30,
+  "gender": "MALE"
+}
+    </div>
+    <div class="status-codes">Status Codes: 201 Created, 400 Bad Request</div>
+
+    <h4>GET /api/receptionist/patients</h4>
+    <p>List all registered patients.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h3>Token Management</h3>
+
+    <h4>POST /api/receptionist/tokens</h4>
+    <p>Generate a token for an offline patient.</p>
+    <div class="code-block">
+{
+  "patientId": 1,
+  "doctorId": 2,
+  "priority": "NORMAL"
+}
+    </div>
+    <div class="status-codes">Status Codes: 201 Created, 400 Bad Request</div>
+
+    <h4>PUT /api/receptionist/tokens/{id}/priority</h4>
+    <p>Update token priority.</p>
+    <div class="code-block">
+{
+  "priority": "URGENT"
+}
+    </div>
+    <div class="status-codes">Status Codes: 200 OK, 404 Not Found</div>
+
+    <h4>DELETE /api/receptionist/tokens/{id}</h4>
+    <p>Remove a patient from the queue.</p>
+    <div class="status-codes">Status Codes: 204 No Content, 404 Not Found</div>
+
+    <h3>Queue View</h3>
+
+    <h4>GET /api/receptionist/queue</h4>
+    <p>View all active tokens.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h2>Doctor Endpoints</h2>
+    <div class="warning">All endpoints require DOCTOR role</div>
+
+    <h3>Queue Management</h3>
+
+    <h4>GET /api/doctor/queue</h4>
+    <p>Get the ordered queue for the authenticated doctor.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h4>POST /api/doctor/queue/next</h4>
+    <p>Call the next patient in queue.</p>
+    <div class="status-codes">Status Codes: 200 OK, 404 Not Found</div>
+
+    <h4>PUT /api/doctor/tokens/{id}/status</h4>
+    <p>Update consultation status of a token.</p>
+    <div class="code-block">
+{
+  "status": "COMPLETED"
+}
+    </div>
+    <div class="status-codes">Status Codes: 200 OK, 400 Bad Request, 404 Not Found</div>
+
+    <h2>Patient Endpoints</h2>
+    <div class="warning">Public endpoints - no authentication required</div>
+
+    <h3>Self-Service</h3>
+
+    <h4>POST /api/patient/register</h4>
+    <p>Patient self-registration.</p>
+    <div class="code-block">
+{
+  "name": "Jane Doe",
+  "phone": "0987654321",
+  "email": "jane@example.com",
+  "age": 25,
+  "gender": "FEMALE"
+}
+    </div>
+    <div class="status-codes">Status Codes: 201 Created, 400 Bad Request</div>
+
+    <h4>POST /api/patient/token</h4>
+    <p>Generate a token online (priority automatically set to NORMAL).</p>
+    <div class="code-block">
+{
+  "patientId": 1,
+  "doctorId": 2
+}
+    </div>
+    <div class="status-codes">Status Codes: 201 Created, 400 Bad Request</div>
+
+    <h4>GET /api/patient/token-status/{tokenNumber}</h4>
+    <p>Check token status.</p>
+    <div class="status-codes">Status Codes: 200 OK, 404 Not Found</div>
+
+    <h4>GET /api/patient/queue-position/{tokenNumber}</h4>
+    <p>Check live queue position.</p>
+    <div class="code-block">
+{
+  "tokenNumber": "DOC001-001",
+  "status": "WAITING",
+  "position": 3,
+  "totalWaiting": 5,
+  "doctorName": "Dr. Smith",
+  "departmentName": "Cardiology"
+}
+    </div>
+    <div class="status-codes">Status Codes: 200 OK, 404 Not Found</div>
+
+    <h2>Public Endpoints</h2>
+    <div class="warning">No authentication required</div>
+
+    <h3>Department & Doctor Information</h3>
+
+    <h4>GET /api/public/departments</h4>
+    <p>List all active departments.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h4>GET /api/public/doctors</h4>
+    <p>List all available doctors.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h4>GET /api/public/doctors/department/{departmentId}</h4>
+    <p>List available doctors by department.</p>
+    <div class="status-codes">Status Codes: 200 OK</div>
+
+    <h2>Data Models</h2>
+
+    <h3>UserResponse</h3>
+    <div class="code-block">
+{
+  "id": 1,
+  "name": "System Admin",
+  "email": "admin@hospital.com",
+  "role": "ADMIN",
+  "active": true,
+  "createdAt": "2024-01-01T10:00:00"
+}
+    </div>
+
+    <h3>DepartmentResponse</h3>
+    <div class="code-block">
+{
+  "id": 1,
+  "name": "Cardiology",
+  "description": "Heart and cardiovascular care",
+  "active": true
+}
+    </div>
+
+    <h3>DoctorResponse</h3>
+    <div class="code-block">
+{
+  "id": 1,
+  "userId": 2,
+  "name": "Dr. Smith",
+  "email": "smith@hospital.com",
+  "specialization": "Cardiologist",
+  "available": true,
+  "department": {
+    "id": 1,
+    "name": "Cardiology",
+    "description": "Heart and cardiovascular care",
+    "active": true
+  }
+}
+    </div>
+
+    <h3>PatientResponse</h3>
+    <div class="code-block">
+{
+  "id": 1,
+  "name": "John Doe",
+  "phone": "1234567890",
+  "email": "john@example.com",
+  "age": 30,
+  "gender": "MALE",
+  "registeredBy": "RECEPTIONIST",
+  "createdAt": "2024-01-01T10:00:00"
+}
+    </div>
+
+    <h3>TokenResponse</h3>
+    <div class="code-block">
+{
+  "id": 1,
+  "tokenNumber": "DOC001-001",
+  "patientId": 1,
+  "patientName": "John Doe",
+  "patientPhone": "1234567890",
+  "doctorId": 2,
+  "doctorName": "Dr. Smith",
+  "specialization": "Cardiologist",
+  "departmentId": 1,
+  "departmentName": "Cardiology",
+  "priority": "NORMAL",
+  "status": "WAITING",
+  "generatedBy": "RECEPTIONIST",
+  "createdAt": "2024-01-01T10:00:00",
+  "updatedAt": "2024-01-01T10:00:00",
+  "queuePosition": 1
+}
+    </div>
+
+    <h2>Enumerations</h2>
+
+    <h3>Role</h3>
+    <ul>
+        <li><code>ADMIN</code></li>
+        <li><code>RECEPTIONIST</code></li>
+        <li><code>DOCTOR</code></li>
+    </ul>
+
+    <h3>Priority</h3>
+    <ul>
+        <li><code>EMERGENCY</code> (highest priority)</li>
+        <li><code>URGENT</code></li>
+        <li><code>NORMAL</code> (lowest priority)</li>
+    </ul>
+
+    <h3>TokenStatus</h3>
+    <ul>
+        <li><code>WAITING</code></li>
+        <li><code>IN_PROGRESS</code></li>
+        <li><code>COMPLETED</code></li>
+    </ul>
+
+    <h3>RegistrationMode</h3>
+    <ul>
+        <li><code>SELF</code></li>
+        <li><code>RECEPTIONIST</code></li>
+    </ul>
+
+    <h3>Gender</h3>
+    <ul>
+        <li><code>MALE</code></li>
+        <li><code>FEMALE</code></li>
+        <li><code>OTHER</code></li>
+    </ul>
+
+    <h2>Error Responses</h2>
+
+    <h3>400 Bad Request</h3>
+    <div class="code-block">
+{
+  "timestamp": "2024-01-01T10:00:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Validation failed",
+  "path": "/api/auth/login"
+}
+    </div>
+
+    <h3>401 Unauthorized</h3>
+    <div class="code-block">
+{
+  "timestamp": "2024-01-01T10:00:00",
+  "status": 401,
+  "error": "Unauthorized",
+  "message": "Invalid credentials",
+  "path": "/api/auth/login"
+}
+    </div>
+
+    <h3>403 Forbidden</h3>
+    <div class="code-block">
+{
+  "timestamp": "2024-01-01T10:00:00",
+  "status": 403,
+  "error": "Forbidden",
+  "message": "Access denied",
+  "path": "/api/admin/users"
+}
+    </div>
+
+    <h3>404 Not Found</h3>
+    <div class="code-block">
+{
+  "timestamp": "2024-01-01T10:00:00",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Resource not found",
+  "path": "/api/admin/users/999"
+}
+    </div>
+
+    <h2>WebSocket Endpoints</h2>
+
+    <h3>STOMP Broker</h3>
+    <div class="endpoint">
+        <strong>URL:</strong> <span class="url">ws://localhost:8081/ws</span>
+    </div>
+
+    <h3>Topics</h3>
+
+    <h4>/topic/queue/{doctorId}</h4>
+    <p>Subscribe to real-time queue updates for a specific doctor.</p>
+    <p><strong>Example:</strong> <code>/topic/queue/1</code></p>
+
+    <h4>/topic/token/{tokenNumber}</h4>
+    <p>Subscribe to real-time status updates for a specific token.</p>
+    <p><strong>Example:</strong> <code>/topic/token/DOC001-001</code></p>
+
+    <h3>Message Format</h3>
+    <div class="code-block">
+{
+  "id": 1,
+  "tokenNumber": "DOC001-001",
+  "status": "IN_PROGRESS",
+  "updatedAt": "2024-01-01T10:00:00"
+}
+    </div>
+
+    <h2>Security</h2>
+
+    <h3>JWT Authentication</h3>
+    <ul>
+        <li>Include JWT token in Authorization header: <code>Bearer {token}</code></li>
+        <li>Token expires after 24 hours</li>
+        <li>Stateless authentication</li>
+    </ul>
+
+    <h3>CORS Configuration</h3>
+    <ul>
+        <li>Allowed origins: <code>http://localhost:4200</code></li>
+        <li>Allowed methods: GET, POST, PUT, DELETE, OPTIONS</li>
+        <li>Allowed headers: All</li>
+        <li>Credentials: Allowed</li>
+    </ul>
+
+    <h3>Role-Based Access Control</h3>
+    <ul>
+        <li><strong>ADMIN:</strong> Full system access</li>
+        <li><strong>RECEPTIONIST:</strong> Patient registration and queue management</li>
+        <li><strong>DOCTOR:</strong> Queue viewing and status updates</li>
+        <li><strong>Public:</strong> Patient self-service and information viewing</li>
+    </ul>
+
+    <h2>Additional Information</h2>
+
+    <h3>Rate Limiting</h3>
+    <div class="warning">No explicit rate limiting implemented - consider implementing for production use</div>
+
+    <h3>Versioning</h3>
+    <p>Current API version: v1<br>No versioning strategy implemented yet</p>
+
+    <div class="footer">
+        <p><strong>Document generated on:</strong> April 22, 2026</p>
+        <p><strong>API Version:</strong> 1.0.0</p>
+        <p><strong>System:</strong> Smart Hospital Queue Management System</p>
+    </div>
+</body>
+</html>

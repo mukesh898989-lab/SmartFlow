@@ -40,6 +40,10 @@ public class TokenResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private LocalDateTime skippedAt;
+    private Boolean recalled;
+    private LocalDateTime recalledAt;
+
     /**
      * Queue position (1-based). Populated on demand by QueueService.
      * -1 if not in WAITING state.

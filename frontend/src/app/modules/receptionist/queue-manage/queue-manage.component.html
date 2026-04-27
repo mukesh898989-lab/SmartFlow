@@ -6,6 +6,7 @@
 <div *ngIf="success" class="alert alert-success">{{ success }}</div>
 <div *ngIf="error"   class="alert alert-danger">{{ error }}</div>
 
+<!-- ── Active Queue ─────────────────────────────────────────────────────── -->
 <div class="card">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
     <strong>Active Queue ({{ queue.length }} tokens)</strong>
@@ -28,7 +29,13 @@
     </thead>
     <tbody>
       <tr *ngFor="let token of queue">
-        <td><strong>{{ token.tokenNumber }}</strong></td>
+        <td>
+          <strong>{{ token.tokenNumber }}</strong>
+          <span *ngIf="token.recalled"
+                style="display:block;font-size:11px;color:#fd7e14;font-weight:600;margin-top:2px;">
+            ↩ RECALLED
+          </span>
+        </td>
         <td>{{ token.patientName }}<br><small>{{ token.patientPhone }}</small></td>
         <td>{{ token.doctorName }}</td>
         <td>{{ token.departmentName }}</td>
@@ -60,5 +67,63 @@
   <p *ngIf="!loading && queue.length === 0"
      style="text-align:center;color:#6c757d;padding:24px;">
     Queue is empty.
+  </p>
+</div>
+
+<!-- ── Skipped Patients ────────────────────────────────────────────────── -->
+<div class="card" style="border-left:4px solid #fd7e14; margin-top:24px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <div>
+      <strong style="font-size:16px;">Skipped Patients
+        <span *ngIf="skippedQueue.length > 0"
+              style="background:#fd7e14;color:#fff;border-radius:12px;padding:2px 8px;font-size:13px;margin-left:8px;">
+          {{ skippedQueue.length }}
+        </span>
+      </strong>
+      <p style="font-size:13px;color:#6c757d;margin:4px 0 0;">
+        Patients who were absent when called. Click Recall when they return — they will be placed next after the current consultation.
+      </p>
+    </div>
+    <button class="btn btn-secondary" (click)="loadSkippedQueue()" [disabled]="skippedLoading" style="font-size:13px;">
+      Refresh
+    </button>
+  </div>
+
+  <table *ngIf="skippedQueue.length > 0">
+    <thead>
+      <tr>
+        <th>Token #</th>
+        <th>Patient</th>
+        <th>Doctor</th>
+        <th>Dept</th>
+        <th>Priority</th>
+        <th>Skipped At</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let token of skippedQueue" style="background:#fff8f0;">
+        <td><strong>{{ token.tokenNumber }}</strong></td>
+        <td>{{ token.patientName }}<br><small>{{ token.patientPhone }}</small></td>
+        <td>{{ token.doctorName }}</td>
+        <td>{{ token.departmentName }}</td>
+        <td><span [class]="getPriorityClass(token.priority)">{{ token.priority }}</span></td>
+        <td style="font-size:13px;color:#6c757d;">
+          {{ token.skippedAt | date:'HH:mm' }}
+        </td>
+        <td>
+          <button class="btn btn-primary"
+                  style="font-size:12px;padding:4px 12px;background:#fd7e14;border-color:#fd7e14;"
+                  (click)="recallToken(token)">
+            Recall
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!skippedLoading && skippedQueue.length === 0"
+     style="text-align:center;color:#6c757d;padding:16px;">
+    No skipped patients.
   </p>
 </div>

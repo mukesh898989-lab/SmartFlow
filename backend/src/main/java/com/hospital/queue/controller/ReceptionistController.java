@@ -6,6 +6,8 @@ import com.hospital.queue.dto.request.UpdatePriorityRequest;
 import com.hospital.queue.dto.response.PatientResponse;
 import com.hospital.queue.dto.response.TokenResponse;
 import com.hospital.queue.service.ReceptionistService;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import java.util.List;
 @RequestMapping("/api/receptionist")
 @PreAuthorize("hasRole('RECEPTIONIST')")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "Bearer Authentication")
 public class ReceptionistController {
 
     private final ReceptionistService receptionistService;
@@ -78,5 +81,23 @@ public class ReceptionistController {
     @GetMapping("/queue")
     public ResponseEntity<List<TokenResponse>> getActiveQueue() {
         return ResponseEntity.ok(receptionistService.getActiveQueue());
+    }
+
+    // ─── Skip / Recall ────────────────────────────────────────────────────────
+
+    /**
+     * POST /api/receptionist/tokens/{id}/recall
+     * Recalls a skipped patient. Status reverts to WAITING with recalled=true,
+     * placing the patient as the very next in line after the current consultation.
+     */
+    @PostMapping("/tokens/{id}/recall")
+    public ResponseEntity<TokenResponse> recallToken(@PathVariable Long id) {
+        return ResponseEntity.ok(receptionistService.recallPatient(id));
+    }
+
+    /** GET /api/receptionist/skipped-queue — List all currently skipped patients. */
+    @GetMapping("/skipped-queue")
+    public ResponseEntity<List<TokenResponse>> getSkippedQueue() {
+        return ResponseEntity.ok(receptionistService.getSkippedQueue());
     }
 }

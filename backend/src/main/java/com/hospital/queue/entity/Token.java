@@ -41,17 +41,17 @@ public class Token {
     private Department department;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     @Builder.Default
     private Priority priority = Priority.NORMAL;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     @Builder.Default
     private TokenStatus status = TokenStatus.WAITING;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "generated_by", nullable = false, length = 20)
+    @Column(name = "generated_by", nullable = false, length = 20, columnDefinition = "VARCHAR(20)")
     @Builder.Default
     private RegistrationMode generatedBy = RegistrationMode.SELF;
 
@@ -62,4 +62,14 @@ public class Token {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "skipped_at")
+    private LocalDateTime skippedAt;
+
+    @Column(name = "recalled")
+    @Builder.Default
+    private Boolean recalled = false;
+
+    @Column(name = "recalled_at")
+    private LocalDateTime recalledAt;
 }
