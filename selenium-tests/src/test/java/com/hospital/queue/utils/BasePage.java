@@ -1,4 +1,4 @@
-package com.hospital.queue.pages;
+package com.hospital.queue.utils;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -26,12 +26,26 @@ public abstract class BasePage {
         return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
+    protected WebElement waitVisible(WebElement element) {
+        return wait.until(ExpectedConditions.visibilityOf(element));
+    }
+
     protected WebElement waitClickable(By locator) {
         return wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
+    protected WebElement waitClickable(WebElement element) {
+        return wait.until(ExpectedConditions.elementToBeClickable(element));
+    }
+
     protected void typeInto(By locator, String text) {
         WebElement el = waitVisible(locator);
+        el.clear();
+        el.sendKeys(text);
+    }
+
+    protected void typeInto(WebElement element, String text) {
+        WebElement el = waitVisible(element);
         el.clear();
         el.sendKeys(text);
     }
@@ -50,6 +64,10 @@ public abstract class BasePage {
 
     protected void clickWhenReady(By locator) {
         waitClickable(locator).click();
+    }
+
+    protected void clickWhenReady(WebElement element) {
+        waitClickable(element).click();
     }
 
     protected void waitForUrl(String fragment) {
