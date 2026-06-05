@@ -1,21 +1,38 @@
 package com.hospital.queue.pages;
 
-import org.openqa.selenium.By;
+import com.hospital.queue.utils.BasePage;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.How;
+import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-/** Page Object for the navbar / layout shared by every /admin/* page. */
+/**
+ * Page Object for the navbar / layout shared by every /admin/* page.
+ * Uses Selenium PageFactory to lazily initialise the WebElements
+ * declared with @FindBy.
+ */
 public class AdminLayoutPage extends BasePage {
 
-    private static final By BRAND_ADMIN       = By.xpath("//span[@class='brand' and contains(text(),'Admin')]");
-    private static final By DEPARTMENTS_LINK  = By.xpath("//nav/a[contains(text(),'Departments')]");
-    private static final By DOCTORS_LINK      = By.xpath("//nav/a[contains(text(),'Doctors')]");
-    private static final By USERS_LINK        = By.xpath("//nav/a[contains(text(),'Users')]");
-    private static final By LOGOUT_BUTTON     = By.className("logout-btn");
+    @FindBy(how = How.XPATH, using = "//span[@class='brand' and contains(text(),'Admin')]")
+    private WebElement brandAdmin;
+
+    @FindBy(how = How.XPATH, using = "//nav/a[contains(text(),'Departments')]")
+    private WebElement departmentsLink;
+
+    @FindBy(how = How.XPATH, using = "//nav/a[contains(text(),'Doctors')]")
+    private WebElement doctorsLink;
+
+    @FindBy(how = How.XPATH, using = "//nav/a[contains(text(),'Users')]")
+    private WebElement usersLink;
+
+    @FindBy(how = How.CLASS_NAME, using = "logout-btn")
+    private WebElement logoutButton;
 
     public AdminLayoutPage(WebDriver driver, WebDriverWait wait) {
         super(driver, wait);
+        PageFactory.initElements(driver, this);
     }
 
     public void waitForAdminUrl() {
@@ -23,29 +40,29 @@ public class AdminLayoutPage extends BasePage {
     }
 
     public WebElement waitForBrand() {
-        return waitVisible(BRAND_ADMIN);
+        return waitVisible(brandAdmin);
     }
 
     public DepartmentsPage gotoDepartments() {
-        clickWhenReady(DEPARTMENTS_LINK);
+        clickWhenReady(departmentsLink);
         waitForUrl("/admin/departments");
         return new DepartmentsPage(driver, wait);
     }
 
     public DoctorsPage gotoDoctors() {
-        clickWhenReady(DOCTORS_LINK);
+        clickWhenReady(doctorsLink);
         waitForUrl("/admin/doctors");
         return new DoctorsPage(driver, wait);
     }
 
     public UsersPage gotoUsers() {
-        clickWhenReady(USERS_LINK);
+        clickWhenReady(usersLink);
         waitForUrl("/admin/users");
         return new UsersPage(driver, wait);
     }
 
     public LoginPage logout() {
-        clickWhenReady(LOGOUT_BUTTON);
+        clickWhenReady(logoutButton);
         waitForUrl(LoginPage.PATH);
         return new LoginPage(driver, wait);
     }

@@ -8,7 +8,11 @@
 
 `selenium-tests/` is an **end-to-end UI automation suite** for SmartFlowApp — a hospital queue-management system. It drives a real Chrome browser through the production Angular frontend (port 4200) which talks to the Spring Boot backend (port 8081).
 
-A single sequential scenario covers the full real-world hospital workflow across **4 roles** (Admin, Receptionist, Doctor, Patient) in **14 ordered test cases**:
+The suite is split into **two complementary test classes**, both declared in `testng.xml`:
+
+### 1.1 `SmartFlowTests` — Staff-driven flow (14 test cases)
+
+The original real-world hospital workflow across **4 roles** (Admin, Receptionist, Doctor, Patient). A receptionist registers the patient and generates the token on their behalf:
 
 | # | Role | Action |
 |---|------|--------|
@@ -27,6 +31,24 @@ A single sequential scenario covers the full real-world hospital workflow across
 | TC13 | Patient | Tracks token, sees "Consultation Completed" |
 | TC14 | Doctor | Logs out |
 
+### 1.2 `PatientFlowTests` — Patient self-service flow (9 test cases)
+
+The same end goal but the patient self-registers from the public `/patient` page without a receptionist:
+
+| # | Role | Action |
+|---|------|--------|
+| TC01 | Admin | Seeds a Department and a Doctor (test setup) |
+| TC02 | Admin | Logs out (patient flow runs unauthenticated) |
+| TC03 | Patient | Lands on the public `/patient` home page |
+| TC04 | Patient | Self-registers (3-step form — step 1: personal details) |
+| TC05 | Patient | Picks the department + doctor and receives a Token |
+| TC06 | Doctor | Logs in and sees the self-registered patient in the queue |
+| TC07 | Doctor | Calls the patient (status → IN_PROGRESS) |
+| TC08 | Doctor | Completes the consultation (status → COMPLETED) |
+| TC09 | Patient | Tracks the token, sees "Consultation Completed" |
+
+Both test classes are independent — they boot their own `WebDriver`, generate their own unique timestamp-suffixed test data, and tear down cleanly at the end.
+
 ---
 
 ## 2. Tech stack
@@ -43,6 +65,8 @@ A single sequential scenario covers the full real-world hospital workflow across
 **Design patterns used**
 
 - **Page Object Model (POM)** — one class per UI screen, locators private, actions public.
+- **Selenium PageFactory** — layout / navbar pages use `@FindBy` field declarations and `PageFactory.initElements(driver, this)` for lazy element initialisation.
+- **Shared `BasePage` (utils package)** — every Page Object extends `com.hospital.queue.utils.BasePage`, which centralises explicit-wait helpers, typing, dropdown selection and URL waits.
 - **Externalised test data** — base values in a `.properties` file, timestamp appended at runtime for uniqueness.
 - **Explicit waits only** — every interaction is gated by `WebDriverWait` (no `Thread.sleep`).
 
@@ -53,12 +77,11 @@ A single sequential scenario covers the full real-world hospital workflow across
 ```
 selenium-tests/
 ├── pom.xml                              ← Maven build + dependencies
-├── testng.xml                           ← TestNG suite definition
+├── testng.xml                           ← TestNG suite definition (two <test> blocks)
 ├── SELENIUM_TESTS_GUIDE.md              ← (this file)
 └── src/test/
     ├── java/com/hospital/queue/
     │   ├── pages/                       ← Page Object Model
-    │   │   ├── BasePage.java
     │   │   ├── LoginPage.java
     │   │   ├── AdminLayoutPage.java
     │   │   ├── AdminDashboardPage.java
@@ -70,9 +93,14 @@ selenium-tests/
     │   │   ├── GenerateTokenPage.java
     │   │   ├── DoctorLayoutPage.java
     │   │   ├── DoctorQueuePage.java
-    │   │   └── TrackTokenPage.java
+    │   │   ├── TrackTokenPage.java
+    │   │   ├── PatientHomePage.java          ← NEW (public /patient landing)
+    │   │   └── PatientSelfRegisterPage.java  ← NEW (public /patient/register 3-step form)
+    │   ├── utils/                       ← Reusable Selenium primitives
+    │   │   └── BasePage.java            ← MOVED here from pages/
     │   └── tests/
-    │       └── SmartFlowTests.java      ← The 14 test cases
+    │       ├── SmartFlowTests.java      ← 14 staff-driven test cases
+    │       └── PatientFlowTests.java    ← NEW: 9 patient self-service test cases
     └── resources/
         └── testdata.properties          ← Externalised test data
 ```
@@ -89,7 +117,12 @@ The Maven Project Object Model — declares Java 17, UTF-8 encoding, three runti
 
 ### 4.2 `testng.xml`
 
-TestNG suite descriptor. Declares one `<test>` containing the single class `com.hospital.queue.tests.SmartFlowTests`. Because the class uses `priority = 1..14`, TestNG runs the methods in that exact order within the class.
+TestNG suite descriptor. Declares **two `<test>` blocks** that run sequentially:
+
+1. **`Hospital Queue Management Tests`** → `com.hospital.queue.tests.SmartFlowTests` (the 14-step staff-driven flow, `priority = 1..14`).
+2. **`Patient-Perspective Tests`** → `com.hospital.queue.tests.PatientFlowTests` (the 9-step patient self-service flow, `priority = 1..9`).
+
+Each class uses `priority` to enforce the order of methods inside that class. The two classes are otherwise independent — each spins up its own `WebDriver` in `@BeforeClass` and quits it in `@AfterClass`.
 
 ### 4.3 `src/test/resources/testdata.properties`
 
@@ -108,19 +141,24 @@ doctor.email.domain=@hospital.com
 
 The test class reads these once in a static initializer and appends `System.currentTimeMillis()` where uniqueness is required (names, emails, phone). This is what stops re-runs from colliding with old rows in the DB.
 
-### 4.4 `pages/BasePage.java`
+### 4.4 `utils/BasePage.java`
+
+> **Note:** This class lives in `com.hospital.queue.utils` (not `pages`) since it is a shared utility, not a page object. Every concrete page in `pages/` extends it.
 
 Abstract parent for every Page Object. Holds the `WebDriver` and `WebDriverWait` references, and exposes **reusable primitives**:
 
 | Method | Purpose |
 |--------|---------|
-| `waitVisible(By)` | Wait until element is visible, return it |
-| `waitClickable(By)` | Wait until element is clickable, return it |
-| `typeInto(By, text)` | Wait → clear → sendKeys |
+| `waitVisible(By)` / `waitVisible(WebElement)` | Wait until element is visible, return it (overload accepts a PageFactory-managed `WebElement`) |
+| `waitClickable(By)` / `waitClickable(WebElement)` | Wait until element is clickable, return it |
+| `typeInto(By, text)` / `typeInto(WebElement, text)` | Wait → clear → sendKeys |
 | `selectByText(By, text)` | Selenium `Select` wrapper for `<select>` dropdowns |
 | `selectFromPopulatedDropdown(By, text)` | Same, but first waits for the dropdown to load >1 option from the API |
-| `clickWhenReady(By)` | Wait clickable → click |
+| `clickWhenReady(By)` / `clickWhenReady(WebElement)` | Wait clickable → click |
 | `waitForUrl(fragment)` | Wait until `urlContains(fragment)` |
+| `getCurrentUrl()` / `getPageSource()` | Public passthroughs used by the test classes for assertions |
+
+The `WebElement` overloads exist because some pages (e.g. `AdminLayoutPage`) use Selenium **PageFactory** with `@FindBy` fields — those fields are `WebElement` references, not `By` locators, so the helpers accept both forms.
 
 Every page extends this so the higher layers stay clean.
 
@@ -133,13 +171,26 @@ Models `/auth/login`. Methods:
 
 ### 4.6 `pages/AdminLayoutPage.java`
 
-Models the **navbar and logout button** shared by every `/admin/*` page. Returning a strongly-typed next page is the POM idiom:
+Models the **navbar and logout button** shared by every `/admin/*` page. This page uses **Selenium PageFactory**:
+
+```java
+@FindBy(how = How.XPATH, using = "//nav/a[contains(text(),'Departments')]")
+private WebElement departmentsLink;
+...
+public AdminLayoutPage(WebDriver driver, WebDriverWait wait) {
+    super(driver, wait);
+    PageFactory.initElements(driver, this);   // lazy proxy initialisation
+}
+```
+
+Returning a strongly-typed next page is the POM idiom:
 
 - `gotoDepartments()` → `DepartmentsPage`
 - `gotoDoctors()` → `DoctorsPage`
 - `gotoUsers()` → `UsersPage`
 - `logout()` → `LoginPage`
 - `waitForBrand()` — verifies the "Admin" brand label is rendered.
+- `waitForAdminUrl()` — explicit URL check after login.
 
 ### 4.7 `pages/AdminDashboardPage.java`
 
@@ -184,9 +235,31 @@ The real work of TC11 / TC12:
 
 Public page at `/patient/track` — no login. `trackToken(num)` fills the input and clicks Track; `waitForCompletedMessage()` / `waitForThankYouMessage()` validate the green completion banner.
 
-### 4.15 `tests/SmartFlowTests.java`
+### 4.15 `pages/PatientHomePage.java`
 
-The orchestrator. Responsibilities:
+Public landing page at `/patient` — no login required. Used as the patient self-service entry point.
+
+- `open(baseUrl)` — navigates to `/patient` and waits for the "Smart Hospital" heading.
+- `waitForHeading()` — returns the visible `<h1>` for assertions.
+- `clickRegister()` → `PatientSelfRegisterPage` — follows the "Register & Get Token" link.
+- `clickTrack()` → `TrackTokenPage` — follows the "Track Your Token" link.
+- `PATH` — public constant (`"/patient"`) so test classes can assert on the URL without hardcoding strings.
+
+### 4.16 `pages/PatientSelfRegisterPage.java`
+
+The **three-step** public form at `/patient/register`. No login required.
+
+| Step | Action | Method |
+|------|--------|--------|
+| 1 | Patient enters name, phone, email, age, gender → clicks **Continue** | `fillPatientDetails(name, phone, email, age, gender)` |
+| 2 | Patient picks Department then Doctor (both dropdowns load from the API) → clicks **Get My Token** | `pickDoctorAndGetToken(deptName, doctorOptionText)` |
+| 3 | Generated token number is shown | `waitForTokenDisplay()` / `getTokenNumber()` / `waitForTrackLink()` |
+
+Both step-2 dropdowns use `selectFromPopulatedDropdown` because their options are populated asynchronously from a REST call. The doctor option text follows the format `"<doctor name> — <specialization>"`.
+
+### 4.17 `tests/SmartFlowTests.java`
+
+The staff-driven flow orchestrator. Responsibilities:
 
 1. **Lifecycle** — `@BeforeClass setUp()` boots ChromeDriver via WebDriverManager and creates the 20-second `WebDriverWait`; `@AfterClass tearDown()` quits the driver.
 2. **Test data setup** — static initializer loads `testdata.properties`, builds unique values by appending `TS = System.currentTimeMillis()`.
@@ -194,9 +267,24 @@ The orchestrator. Responsibilities:
 
 Token continuity: TC08 stores the generated token in a `static String generatedTokenNumber`; TC13 reads it. Static so it survives across method boundaries within a single suite run.
 
+### 4.18 `tests/PatientFlowTests.java`
+
+The **patient-perspective** orchestrator. Same lifecycle and test-data conventions as `SmartFlowTests`, but the storyline runs from the patient's point of view:
+
+1. **TC01–TC02** — Admin logs in, seeds a Department + Doctor (because the backend's `DataInitializer` only seeds the default admin, not the data the patient will pick), then logs out so the rest of the flow is anonymous.
+2. **TC03** — Patient opens the public `/patient` home page (no auth).
+3. **TC04** — Patient fills personal details on the 3-step `/patient/register` form (step 1).
+4. **TC05** — Patient selects the seeded department + doctor and gets a token. The token number is captured in `static String generatedTokenNumber`.
+5. **TC06–TC08** — Doctor logs in as the freshly-created account, sees the self-registered patient in the queue, calls them, completes the consultation.
+6. **TC09** — Patient opens `/patient/track`, enters the captured token, and asserts the "Consultation Completed" banner is visible.
+
+Both test classes share the same `testdata.properties` keys and the same 4-letter-prefix trick for the department name.
+
 ---
 
 ## 5. End-to-end flow — step by step
+
+### 5.1 `SmartFlowTests` — staff-driven flow (14 TCs)
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -226,6 +314,33 @@ Token continuity: TC08 stores the generated token in a `static String generatedT
 ├──────────────────────────────────────────────────────────────────┤
 │  TC13  /patient/track  → enter token → "Consultation Completed"  │
 │  TC14  Doctor logout                                             │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### 5.2 `PatientFlowTests` — patient self-service flow (9 TCs)
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  SETUP (Admin)                                                   │
+├──────────────────────────────────────────────────────────────────┤
+│  TC01  Admin login → create Dept + Doctor (needed for the pick)  │
+│  TC02  Admin logout — rest of the flow is anonymous              │
+├──────────────────────────────────────────────────────────────────┤
+│  PATIENT SELF-SERVICE (public, no login)                         │
+├──────────────────────────────────────────────────────────────────┤
+│  TC03  Open /patient → assert "Smart Hospital" heading           │
+│  TC04  Click "Register & Get Token" → fill step-1 personal data  │
+│  TC05  Pick Dept + Doctor → "Get My Token" → capture token       │
+├──────────────────────────────────────────────────────────────────┤
+│  DOCTOR HANDLES THE TOKEN                                        │
+├──────────────────────────────────────────────────────────────────┤
+│  TC06  Doctor login → sees self-registered patient in queue      │
+│  TC07  Click "Call First Patient"  → IN_PROGRESS                 │
+│  TC08  Click "Complete & Done"     → COMPLETED, queue empty      │
+├──────────────────────────────────────────────────────────────────┤
+│  PATIENT VERIFIES                                                │
+├──────────────────────────────────────────────────────────────────┤
+│  TC09  /patient/track  → enter token → "Consultation Completed"  │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -259,9 +374,29 @@ The **department name** is special: the backend strips non-letters to compute th
 - `Thread.sleep(3000)` either wastes time (element appears after 200 ms) or fails (element takes 4 s).
 - `WebDriverWait.until(ExpectedConditions.visibilityOfElementLocated(...))` polls every ~500 ms and returns the instant the condition is true. Faster *and* more reliable.
 
-### 6.5 Why no `formcontrolname` / `ng-*` selectors?
+### 6.5 Why no `formcontrolname` / `ng-*` selectors? (mostly)
 
-The selector strategy uses only **standard HTML attributes**: `@type`, `@placeholder`, `@class`, `text()`. This means the tests would survive a migration off Angular to React/Vue — the underlying HTML structure is the contract.
+The default strategy uses only **standard HTML attributes**: `@type`, `@placeholder`, `@class`, `text()`. This means the tests would survive a migration off Angular to React/Vue — the underlying HTML structure is the contract.
+
+The one exception is `PatientSelfRegisterPage`, which uses `@formcontrolname` for the public 3-step form. There the inputs have no unique placeholders or labels we can lock onto, and Angular's `formcontrolname` is the most reliable stable selector available. If/when those inputs get unique IDs or `data-test` attributes, those selectors will be the first to migrate.
+
+### 6.6 Why PageFactory in layout pages?
+
+`AdminLayoutPage` (and similarly shaped layout pages) uses Selenium's `@FindBy` + `PageFactory.initElements`. Two reasons:
+
+- **Lazy initialisation.** The proxy WebElement is only resolved when first used — so a layout class that defines 5 nav links doesn't trigger 5 `findElement` calls at construction time.
+- **Declarative locators.** The `@FindBy` annotation reads cleaner than a `By` constant for a class that has many similar elements.
+
+The other pages (forms, dialogs, dropdown-heavy screens) stick with plain `By` constants because their interactions are more procedural and benefit from `By` being passed around (e.g. into `selectFromPopulatedDropdown`).
+
+### 6.7 Why two test classes instead of one big sequential script?
+
+The same business flow can begin two ways in the real product:
+
+1. **Staff-driven** — a receptionist registers the walk-in patient and generates the token. Covered by `SmartFlowTests`.
+2. **Patient self-service** — a patient walks themselves through `/patient` → `/patient/register` and gets the same token without staff involvement. Covered by `PatientFlowTests`.
+
+Both paths must work, and they exercise different page objects (`RegisterPatientPage` + `GenerateTokenPage` vs. `PatientHomePage` + `PatientSelfRegisterPage`). Splitting into two TestNG `<test>` blocks keeps each scenario readable end-to-end and lets the patient flow stand alone in CI if the staff flow is temporarily broken.
 
 ---
 
@@ -416,7 +551,7 @@ A: `target/surefire-reports/` — both XML (machine-readable, for CI) and HTML (
 ### 8.8 This project specifically
 
 **Q31. Walk me through your test project.**
-A: "I built a full end-to-end Selenium suite for SmartFlowApp, a hospital queue management system with four user roles. The suite drives a real Chrome browser through 14 ordered test cases covering admin setup, receptionist patient registration and tokenisation, doctor consultation flow, and the public patient track-token page. I used **Page Object Model** with 12 page classes plus a shared `BasePage`, and externalised all test data into a `.properties` file. Every value is suffixed with a millisecond timestamp so re-runs never collide on the database. Built with Maven, TestNG, and WebDriverManager so ChromeDriver is provisioned automatically."
+A: "I built a full end-to-end Selenium suite for SmartFlowApp, a hospital queue management system with four user roles. The suite is split into two TestNG classes that cover the same business flow from two angles — a 14-step staff-driven scenario where a receptionist creates the token, and a 9-step patient self-service scenario where the patient self-registers from the public `/patient` page. I used **Page Object Model** with 14 page classes plus a shared `BasePage` in a separate `utils` package. Layout pages use Selenium **PageFactory** with `@FindBy` for lazy element initialisation. All test data lives in a `.properties` file and every unique field is suffixed with a millisecond timestamp so re-runs never collide on the database. Built with Maven, TestNG, and WebDriverManager so ChromeDriver is provisioned automatically."
 
 **Q32. Why one big sequential test instead of 14 independent ones?**
 A: The scenario *is* sequential — a doctor can't see a patient in their queue until the receptionist has generated a token, and that requires the doctor to exist, which requires the department to exist. The realistic, production-like flow surfaces integration issues that 14 mocked unit tests would miss. The trade-off is that an early failure cascades — but that's exactly the signal you want when a foundational step breaks.
@@ -472,6 +607,6 @@ A: One file — `DoctorsPage.java`, the `CREATE_BUTTON` locator constant. The te
 
 ## 10. Sentence-by-sentence "elevator pitch"
 
-> *"SmartFlowApp's UI is automated end-to-end with Selenium WebDriver, TestNG and Maven. I structured the suite using the Page Object Model — twelve page classes plus a shared `BasePage` — so locators and Selenium primitives never leak into the test code. All test data lives in a `.properties` file and is made unique per run with a millisecond timestamp, which means the same suite can run hundreds of times against the same database without duplicate-key failures. Fourteen test cases run sequentially via TestNG priorities, walking through the full hospital workflow: admin setup, receptionist patient registration, doctor consultation, and public patient token tracking."*
+> *"SmartFlowApp's UI is automated end-to-end with Selenium WebDriver, TestNG and Maven. I structured the suite using the Page Object Model — fourteen page classes plus a shared `BasePage` in a dedicated `utils` package — so locators and Selenium primitives never leak into the test code. Layout pages use Selenium PageFactory with `@FindBy` for lazy element initialisation. All test data lives in a `.properties` file and is made unique per run with a millisecond timestamp, which means the same suite can run hundreds of times against the same database without duplicate-key failures. There are two test classes: a 14-step staff-driven scenario in `SmartFlowTests` and a 9-step patient self-service scenario in `PatientFlowTests`, both running sequentially via TestNG priorities through admin setup, registration, doctor consultation, and the public patient token-tracking page."*
 
 Use that, then dig deeper based on which thread the interviewer pulls on. Good luck!

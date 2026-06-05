@@ -6,4 +6,9 @@
             <class name="com.hospital.queue.tests.SmartFlowTests"/>
         </classes>
     </test>
+    <test name="Patient-Perspective Tests">
+        <classes>
+            <class name="com.hospital.queue.tests.PatientFlowTests"/>
+        </classes>
+    </test>
 </suite>
