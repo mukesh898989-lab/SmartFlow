@@ -11,4 +11,9 @@
             <class name="com.hospital.queue.tests.PatientFlowTests"/>
         </classes>
     </test>
+    <test name="Negative / Failure Demo Tests">
+        <classes>
+            <class name="com.hospital.queue.tests.FailureTests"/>
+        </classes>
+    </test>
 </suite>
